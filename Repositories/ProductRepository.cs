@@ -2,6 +2,7 @@ using DataAccess;
 using Domain.Entities;
 using Domain.Exceptions;
 using Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repositories;
 
@@ -14,7 +15,7 @@ public class ProductRepository : IProductRepository
         _dbContext = dbContext;
     }
 
-    public async Task<bool> AddAsync(Product product)
+    public async Task<long> AddAsync(Product product)
     {
         if (product.Title.Length > 40)
             throw new BadRequestException("Product title must be less than 40 characters.");
@@ -23,7 +24,7 @@ public class ProductRepository : IProductRepository
             throw new BadRequestException("Product title must be unique.");
 
         _dbContext.Products.Add(product);
-        return await _dbContext.SaveChangesAsync() > 0;
+        return await _dbContext.SaveChangesAsync() > 0 ? product.Id : 0;
     }
 
     public async Task<bool> UpdateAsync(Product product)
@@ -32,8 +33,10 @@ public class ProductRepository : IProductRepository
         return await _dbContext.SaveChangesAsync() > 0;
     }
 
-    public ValueTask<Product?> GetByIdAsync(long id)
-    {
-        return _dbContext.Products.FindAsync(id);
-    }
+    public async ValueTask<Product?> GetByIdAsync(long id)
+        => await _dbContext.Products.FindAsync(id);
+
+
+    public async Task<List<Product>> Products()
+        => await _dbContext.Products.ToListAsync();
 }

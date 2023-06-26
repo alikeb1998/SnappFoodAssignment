@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Repositories;
 
-public class UserRepository: IUserRepository
+public class UserRepository : IUserRepository
 {
     private readonly SnappFoodDbContext _dbContext;
 
@@ -14,7 +14,7 @@ public class UserRepository: IUserRepository
         _dbContext = dbContext;
     }
 
-    public Task<User> GetByIdAsync(int id)
+    public Task<User> GetByIdAsync(long id)
     {
         return _dbContext.Users.Include(u => u.Orders).FirstOrDefaultAsync(u => u.Id == id);
     }
@@ -24,4 +24,7 @@ public class UserRepository: IUserRepository
         user.Orders.Add(order);
         return Task.CompletedTask;
     }
+    
+    public async Task<List<User>> Users()
+        => await _dbContext.Users.ToListAsync();
 }

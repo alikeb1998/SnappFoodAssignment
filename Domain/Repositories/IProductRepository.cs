@@ -4,7 +4,8 @@ namespace Domain.Repositories;
 
 public interface IProductRepository
 {
-    Task<bool> AddAsync(Product product);
+    Task<long> AddAsync(Product product);
     Task<bool> UpdateAsync(Product product);
     ValueTask<Product?> GetByIdAsync(long id);
+    Task<List<Product>> Products();
 }
