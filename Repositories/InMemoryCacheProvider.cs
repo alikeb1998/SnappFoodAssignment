@@ -6,16 +6,14 @@ namespace Repositories;
 
 public class InMemoryCacheProvider : ICacheProvider
 {
-    private readonly MemoryCache _cache;
-    private readonly ProductRepository _productRepository;
-    private readonly UserRepository _userRepository;
+    private readonly IMemoryCache _cache;
+    /*private readonly IProductRepository _productRepository;
+    private readonly IUserRepository _userRepository;*/
     private readonly MemoryCacheEntryOptions _cacheEntryOptions;
 
-    public InMemoryCacheProvider(ProductRepository productRepository, UserRepository userRepository)
+    public InMemoryCacheProvider(IMemoryCache memoryCache)
     {
-        _cache = new MemoryCache(new MemoryCacheOptions());
-        _productRepository = productRepository;
-        _userRepository = userRepository;
+        _cache = memoryCache;
         _cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromDays(1));
     }
@@ -38,24 +36,24 @@ public class InMemoryCacheProvider : ICacheProvider
     }
 
    
-    public async Task UpdateProduct(Product product)
+    public async Task UpdateProductAsync(Product product)
     {
        _cache.Remove(product.Id);
        _cache.Set(product.Id, product, _cacheEntryOptions);
-    }
-
-    public async Task CacheData()
-    {
-        var products = await _productRepository.Products();
-        var users = await _userRepository.Users();
-        
-        products.ForEach(x => _cache.Set(x.Id, x, _cacheEntryOptions));
-        users.ForEach(x => _cache.Set(x.Id, x, _cacheEntryOptions));
     }
 
     public async Task AddProduct(Product product)
     {
         _cache.Set(product.Id, product, _cacheEntryOptions);
     }
-    
+
+    public async Task CacheProducts(List<Product> model)
+    {
+       model.ForEach(x=>_cache.Set(x.Id, x, _cacheEntryOptions));
+    }
+
+    public async Task Remove(string key)
+    {
+        _cache.Remove(key);
+    }
 }

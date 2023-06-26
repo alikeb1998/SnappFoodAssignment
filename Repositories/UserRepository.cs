@@ -19,10 +19,11 @@ public class UserRepository : IUserRepository
         return _dbContext.Users.Include(u => u.Orders).FirstOrDefaultAsync(u => u.Id == id);
     }
 
-    public Task AddOrderAsync(User user, Order order)
+    public async Task AddOrderAsync(User user, Order order)
     {
         user.Orders.Add(order);
-        return Task.CompletedTask;
+        _dbContext.Users.Add(user);
+        _dbContext.SaveChangesAsync();
     }
     
     public async Task<List<User>> Users()

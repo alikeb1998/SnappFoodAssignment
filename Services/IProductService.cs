@@ -8,5 +8,6 @@ public interface IProductService
     Task<bool> AddProductAsync(NewProductReq product);
     Task<bool> IncreaseInventoryAsync(long productId, long quantity);
     Task<Product> GetProductAsync(long id);
-    Task BuyProductAsync(long productId, long userId);
+    Task<bool> BuyProductAsync(long productId, long userId);
+    Task<bool> CacheProducts();
 }

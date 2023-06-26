@@ -11,19 +11,21 @@ public class SnappFoodDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Order> Orders { get; set; }
 
+    public SnappFoodDbContext(DbContextOptions<SnappFoodDbContext> options)
+        : base(options)
+    {
+    }
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
         var entryEntities = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
         foreach (var entryEntity in entryEntities)
         {
-            if (entryEntity.State == EntityState.Added)
+            if (entryEntity.State != EntityState.Added) continue;
+            if (entryEntity.Entity.GetType().GetProperty("CreatedAt") != null)
             {
-                if (entryEntity.Entity.GetType().GetProperty("CreatedAt") != null)
-                {
-                    entryEntity.Entity.GetType().GetProperty("CreatedAt").SetValue(entryEntity.Entity, DateTime.Now);
-                }
-                
+                entryEntity.Entity.GetType().GetProperty("CreatedAt").SetValue(entryEntity.Entity, DateTime.Now);
             }
         }
         
@@ -33,16 +35,14 @@ public class SnappFoodDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
+        if (optionsBuilder.IsConfigured) return;
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
 
-            var connectionString = configuration.GetConnectionString("SqlConnection");
-            optionsBuilder.UseSqlServer(connectionString);
-        }
+        var connectionString = configuration.GetConnectionString("SqlConnection");
+        optionsBuilder.UseSqlServer(connectionString);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,19 +52,19 @@ public class SnappFoodDbContext : DbContext
             .HasIndex(p => p.Title)
             .IsUnique();
     }
-    public class MyDbContextFactory : IDesignTimeDbContextFactory<DbContext>
-    {
-        public DbContext CreateDbContext(string[] args)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
-            var connectionString = configuration.GetConnectionString("ConnectionStrings");
-            optionsBuilder.UseSqlServer(connectionString);
-
-            return new DbContext(optionsBuilder.Options);
-        }
-    }
+    // public class MyDbContextFactory : IDesignTimeDbContextFactory<DbContext>
+    // {
+    //     public DbContext CreateDbContext(string[] args)
+    //     {
+    //         var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
+    //         var configuration = new ConfigurationBuilder()
+    //             .SetBasePath(Directory.GetCurrentDirectory())
+    //             .AddJsonFile("appsettings.json")
+    //             .Build();
+    //         var connectionString = configuration.GetConnectionString("SqlConnection");
+    //         optionsBuilder.UseSqlServer(connectionString);
+    //
+    //         return new DbContext(optionsBuilder.Options);
+    //     }
+    // }
 }

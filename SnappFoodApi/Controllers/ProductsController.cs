@@ -16,59 +16,61 @@ public class ProductsController : ControllerBase
         _productService = productService;
     }
 
-    [HttpPost]
+    [HttpPost(nameof(CacheProducts))]
+    public async Task<IActionResult> CacheProducts()
+    {
+        var res = await _productService.CacheProducts();
+        if (!res)
+        {
+            return BadRequest(res);
+        }
+
+        return Ok(res);
+    }
+
+    [HttpPost(nameof(AddProduct))]
     public async Task<IActionResult> AddProduct(NewProductReq product)
     {
-        try
-        {
-            await _productService.AddProductAsync(product);
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+       var res = await _productService.AddProductAsync(product);
+       if (!res)
+       {
+           return BadRequest(res);
+       }
+
+       return Ok(res);
     }
 
-    [HttpPut("{id}/increase-inventory")]
+    [HttpPut("IncreaseInventory/{id}")]
     public async Task<IActionResult> IncreaseInventory(long id, long quantity)
     {
-        try
+        var res = await _productService.IncreaseInventoryAsync(id, quantity);
+        if (!res)
         {
-            await _productService.IncreaseInventoryAsync(id, quantity);
-            return Ok();
+            return BadRequest(res);
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        return Ok(res);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("Product/{id}")]
     public async Task<IActionResult> GetProduct(long id)
     {
-        try
+        var product = await _productService.GetProductAsync(id);
+        if (product is null)
         {
-            var product = await _productService.GetProductAsync(id);
-            return Ok(product);
+            return NotFound();
         }
-        catch (Exception ex)
-        {
-            return NotFound(ex.Message);
-        }
+        return Ok(product);
     }
 
     [HttpPost("buy/{productId}")]
-    public async Task<IActionResult> BuyProduct(int productId, int userId)
+    public async Task<IActionResult> BuyProduct(long productId, long userId)
     {
-        try
+        var result = await _productService.BuyProductAsync(productId, userId);
+        if (!result)
         {
-            await _productService.BuyProductAsync(productId, userId);
-            return Ok();
+            return BadRequest(result);
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(result);
     }
 }
