@@ -7,8 +7,6 @@ namespace Repositories;
 public class InMemoryCacheProvider : ICacheProvider
 {
     private readonly IMemoryCache _cache;
-    /*private readonly IProductRepository _productRepository;
-    private readonly IUserRepository _userRepository;*/
     private readonly MemoryCacheEntryOptions _cacheEntryOptions;
 
     public InMemoryCacheProvider(IMemoryCache memoryCache)
@@ -34,8 +32,7 @@ public class InMemoryCacheProvider : ICacheProvider
 
         return item;
     }
-
-   
+    
     public async Task UpdateProductAsync(Product product)
     {
        _cache.Remove(product.Id);
